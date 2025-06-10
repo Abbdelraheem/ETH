@@ -1,0 +1,17 @@
+/* إضافة تنسيقات للسجلات */
+.text-green-600 { color: #059669; }
+.text-red-600 { color: #dc2626; }
+.text-yellow-600 { color: #ca8a04; }
+.text-gray-500 { color: #6b7280; }
+
+/* منطقة سجل النشاط */
+#activityLog {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    padding: 1rem;
+    height: 10rem;
+    overflow-y: auto;
+    background-color: #f9fafb;
+    border-radius: 0 0 0.5rem 0.5rem;
+}
