@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- المحتوى الأصلي للواجهة العربية كما هو -->
+    <!-- ... -->
+    
+    <!-- إضافة وظائف الجافاسكريبت -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // متغيرات الحالة
+            let isMonitoring = false;
+            let activityLogLength = 0;
+            
+            // عناصر واجهة المستخدم
+            const startStopBtn = document.getElementById('startStopButton');
+            const activityLog = document.getElementById('activityLog');
+            const walletAddress = document.getElementById('walletAddress');
+            
+            // تحديث سجل النشاط
+            function updateActivityLog(logs) {
+                logs.slice(activityLogLength).forEach(entry => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = `text-${getColorClass(entry.level)}`;
+                    logEntry.textContent = `[${entry.time}] ${entry.message}`;
+                    activityLog.appendChild(logEntry);
+                });
+                activityLogLength = logs.length;
+                activityLog.scrollTop = activityLog.scrollHeight;
+            }
+            
+            // تلوين السجلات حسب المستوى
+            function getColorClass(level) {
+                switch(level) {
+                    case 'success': return 'green-600';
+                    case 'error': return 'red-600';
+                    case 'warning': return 'yellow-600';
+                    default: return 'gray-500';
+                }
+            }
+            
+            // تحديث الإحصائيات
+            function updateStats(stats) {
+                document.getElementById('totalRewards').textContent = `${stats.total_rewards} ETH`;
+                document.getElementById('totalTokens').textContent = `${stats.total_tokens} توكن`;
+                document.getElementById('successRate').textContent = 
+                    stats.successful_claims + stats.failed_claims > 0 ?
+                    `${stats.successful_claims}/${stats.successful_claims + stats.failed_claims}` :
+                    '0/0';
+                document.getElementById('contractsScanned').textContent = stats.contracts_scanned;
+            }
+            
+            // التحقق من حالة النظام
+            function checkSystemStatus() {
+                fetch('/api/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.running !== isMonitoring) {
+                            isMonitoring = data.running;
+                            updateStartStopButton();
+                        }
+                        updateActivityLog(data.log);
+                        updateStats(data.stats);
+                    });
+            }
+            
+            // تحديث زر البدء/الإيقاف
+            function updateStartStopButton() {
+                if (isMonitoring) {
+                    startStopBtn.innerHTML = `
+                        <div class="w-5 h-5 flex items-center justify-center">
+                            <i class="ri-stop-line"></i>
+                        </div>
+                        <span>إيقاف المراقبة</span>
+                    `;
+                    startStopBtn.classList.remove('bg-primary', 'hover:bg-blue-600');
+                    startStopBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                } else {
+                    startStopBtn.innerHTML = `
+                        <div class="w-5 h-5 flex items-center justify-center">
+                            <i class="ri-play-line"></i>
+                        </div>
+                        <span>بدء المراقبة</span>
+                    `;
+                    startStopBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    startStopBtn.classList.add('bg-primary', 'hover:bg-blue-600');
+                }
+            }
+            
+            // بدء/إيقاف المراقبة
+            startStopBtn.addEventListener('click', function() {
+                if (isMonitoring) {
+                    fetch('/api/stop', { method: 'POST' });
+                } else {
+                    fetch('/api/start', { method: 'POST' });
+                }
+            });
+            
+            // تحديث كل 3 ثواني
+            setInterval(checkSystemStatus, 3000);
+            checkSystemStatus();
+        });
+    </script>
+</head>
+<body>
+    <!-- المحتوى الأصلي للواجهة العربية -->
+    <!-- ... -->
+</body>
+</html>
